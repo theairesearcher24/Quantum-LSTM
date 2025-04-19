@@ -1,1 +1,15 @@
 # Quantum-LSTM
+
+# 1. Tiền xử lý văn bản:
+Tiền xử lý văn bản là bước thiết yếu nhằm chuẩn hóa dữ liệu thô, loại bỏ nhiễu và tối ưu hóa đầu vào cho các mô hình học sâu phía sau. Mục tiêu của bước này là chuyển đổi một câu văn bản ban đầu sₖ = {w₁, w₂, ..., wₘ}, với wi là các token, thành một tập token đã được xử lý sₖ' trong đó loại bỏ các ký tự đặc biệt, liên kết URL, chữ in hoa và từ dừng. Phép biến đổi này được mô hình hóa bằng công thức: sₖ' = preprocessing(sₖ). Trong quá trình này, các thư viện như re, nltk và các hàm tokenizer được sử dụng để cắt câu, chuẩn hóa và lọc nhiễu. Lý do chọn cách tiếp cận này là vì sự hiệu quả và tính phổ biến trong xử lý ngôn ngữ tự nhiên, đặc biệt là đối với văn bản mạng xã hội như Twitter.
+𝑠𝑘′ = preprocessing(𝑠𝑘)
+-	𝑠𝑘 = {𝑤1, 𝑤2, …, 𝑤𝑚} là câu gốc, với 𝑤𝑖 là các token (từ hoặc đơn vị ngôn ngữ).
+-	preprocessing() là hàm thực hiện các bước làm sạch, tokenization, và loại bỏ stop words.
+-	𝑠𝑘′ = {𝑤1′, 𝑤2′, …, 𝑤𝑚′} là câu sau khi tiền xử lý.
+# 2. Biểu diễn từ bằng Word2Vec
+Sau khi tiền xử lý, mỗi câu được biểu diễn thành một chuỗi các vector thông qua mô hình Word2Vec. Mỗi token wᵢ được ánh xạ thành một vector nhúng vᵢ ∈ ℝᵈ, tạo thành ma trận biểu diễn câu: Vₖ = [v₁, v₂, ..., vₘ]. Word2Vec được huấn luyện trực tiếp trên tập dữ liệu sau tiền xử lý để đảm bảo ngữ nghĩa phù hợp với ngữ cảnh trong tập văn bản. Mục tiêu chính là biểu diễn thông tin ngôn ngữ ở dạng số liên tục, phù hợp với các mạng nơ-ron. Word2Vec được lựa chọn do khả năng học ngữ nghĩa theo ngữ cảnh mà không cần dữ liệu gán nhãn.
+# 3.	Quantum Embedding
+Một thành phần quan trọng được đề xuất trong nghiên cứu là hàm mã hóa lượng tử. Mặc dù chưa tích hợp trực tiếp vào pipeline chính, Quantum Embedding mở ra hướng tích hợp tính toán lượng tử vào biểu diễn văn bản. Cho một vector đầu vào là vector x = [x₁, x₂, ..., xₙ], quá trình ánh xạ vào không gian Hilbert được định nghĩa như sau: U(x) = ∏ᵢ Rₓ(xᵢ) · Rᵧ(xᵢ); trong đó, Rₓ và Rᵧ là các cổng xoay quanh trục X và Y trong không gian Hilbert tương ứng với từng chiều của vector. Hàm này được hiện thực thông qua thư viện Pennylane, mô phỏng trên thiết bị lượng tử default.qubit. Việc đề xuất phương pháp này nhằm tận dụng khả năng biểu diễn phi tuyến của hệ lượng tử và phục vụ các nghiên cứu mở rộng trong tương lai.
+# 4.	Lớp Quantum-LSTM
+Để kết hợp học tuần tự và định hướng lượng tử, nghiên cứu định nghĩa một lớp LSTM với mục tiêu mô phỏng khả năng học theo chuỗi trong không gian biểu diễn có khả năng lượng tử hóa. Về mặt triển khai, lớp này được xây dựng dựa trên LSTM cổ điển nhưng được thiết kế mở để tích hợp embedding lượng tử trong các nghiên cứu mở rộng. Đầu vào là chuỗi các vector từ đã được nhúng 
+Vₖ = [v₁, v₂, ..., vₘ], và đầu ra là chuỗi trạng thái ẩn Hₖ = [H₁, H₂, ..., Hₘ]. theo công thức hₜ, cₜ = LSTM (vₜ, hₜ₋₁, cₜ₋₁). Lý do giữ cấu trúc LSTM cổ điển là để đảm bảo khả năng huấn luyện ổn định, đồng thời tạo điều kiện cho việc thay thế hoặc kết hợp với các mô-đun lượng tử thực sự trong tương lai. Lớp này được đặt tên là "Quantum-LSTM" để phản ánh định hướng tích hợp lượng tử trong thiết kế kiến trúc tổng thể.
